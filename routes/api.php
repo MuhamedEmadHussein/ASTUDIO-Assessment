@@ -18,23 +18,24 @@ use App\Http\Controllers\API\AttributeController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+Route::middleware('auth:api')->get('auth/user', function (Request $request) {
     return $request->user();
 });
 
 // Public routes
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('auth/register', [AuthController::class, 'register']);
+Route::post('auth/login', [AuthController::class, 'login'])->name('login');
 
 // Protected routes
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
+Route::middleware('auth:api')->group(function () {
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
 
     // Projects
     Route::apiResource('projects', ProjectController::class);
 
     // Timesheets
     Route::apiResource('timesheets', TimesheetController::class);
+    Route::post('timesheets/bulk', [TimesheetController::class, 'bulkStore']);
 
     // Attributes
     Route::apiResource('attributes', AttributeController::class);

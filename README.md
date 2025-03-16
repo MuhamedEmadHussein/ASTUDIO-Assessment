@@ -72,9 +72,87 @@ Regular User:
 - Email: user1@example.com
 - Password: password
 
+## API Collection
+
+A Postman collection is available for testing the API endpoints. The collection includes all available endpoints with example requests and environment variables.
+
+### Importing the Collection
+
+1. Download [Postman](https://www.postman.com/downloads/)
+2. Import the collection file:
+   ```
+   postman/ASTUDIO-Assessment.postman_collection.json
+   ```
+
+### Setting Up Environment
+
+1. Create a new environment in Postman
+2. Add the following variables:
+   - `base_url`: Your API base URL (e.g., `http://localhost:8000`)
+   - `token`: Leave empty (will be automatically set after login)
+
+### Using the Collection
+
+1. Select your environment
+2. Execute the "Login" request first to get the authentication token
+3. The token will be automatically set for subsequent requests
+4. Use the organized folders to find and test different endpoints:
+   - Authentication
+   - Projects
+   - Timesheets
+
+### Available Endpoints
+
+| Folder | Endpoint | Method | Description |
+|--------|----------|--------|-------------|
+| Authentication | `/api/auth/login` | POST | Login to get access token |
+| Authentication | `/api/auth/logout` | POST | Logout and invalidate token |
+| Authentication | `/api/auth/user` | GET | Get current user profile |
+| Projects | `/api/projects` | GET | List all projects with pagination |
+| Projects | `/api/projects/{id}` | GET | Get a specific project |
+| Projects | `/api/projects` | POST | Create a new project |
+| Projects | `/api/projects/{id}` | PUT | Update an existing project |
+| Projects | `/api/projects/{id}` | DELETE | Delete a project |
+| Timesheets | `/api/timesheets` | GET | List all timesheets with pagination |
+| Timesheets | `/api/timesheets/{id}` | GET | Get a specific timesheet |
+| Timesheets | `/api/timesheets` | POST | Create a timesheet entry |
+| Timesheets | `/api/timesheets/{id}` | PUT | Update a timesheet entry |
+| Timesheets | `/api/timesheets/{id}` | DELETE | Delete a timesheet entry |
+| Timesheets | `/api/timesheets/bulk` | POST | Bulk create timesheet entries |
+
 ## API Documentation
 
 ### Authentication
+
+This API uses Laravel Passport for authentication. All protected routes require a Bearer token.
+
+#### Register a new user
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john@example.com",
+    "password": "password123",
+    "password_confirmation": "password123"
+}
+```
+
+Response:
+```json
+{
+    "user": {
+        "id": 1,
+        "first_name": "John",
+        "last_name": "Doe",
+        "email": "john@example.com"
+    },
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+    "token_type": "Bearer"
+}
+```
 
 #### Login
 ```http
@@ -82,133 +160,163 @@ POST /api/auth/login
 Content-Type: application/json
 
 {
-    "email": "admin@example.com",
-    "password": "password"
+    "email": "john@example.com",
+    "password": "password123"
 }
 ```
 
 Response:
 ```json
 {
-    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...",
     "user": {
         "id": 1,
-        "first_name": "Admin",
-        "last_name": "User",
-        "email": "admin@example.com"
-    }
+        "first_name": "John",
+        "last_name": "Doe",
+        "email": "john@example.com"
+    },
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+    "token_type": "Bearer"
 }
 ```
 
-### Projects
-
-#### List Projects
+#### Logout
 ```http
-GET /api/projects
+POST /api/auth/logout
 Authorization: Bearer {token}
 ```
 
-Query Parameters:
-- `page`: Page number (default: 1)
-- `per_page`: Items per page (default: 15)
-- `sort_by`: Field to sort by (default: created_at)
-- `sort_direction`: asc or desc (default: desc)
-- `filters[status]`: Filter by status (pending/active/completed)
-- `filters[department]`: Filter by department attribute
+### Protected Routes
 
-Response:
+All the following routes require authentication. Include the token in the Authorization header:
+```http
+Authorization: Bearer {your_token}
+```
+
+#### Projects
+
+- List all projects
+  ```http
+  GET /api/projects?page=1&per_page=15&sort_by=created_at&sort_direction=desc
+  ```
+
+- Create a project
+  ```http
+  POST /api/projects
+  Content-Type: application/json
+
+  {
+      "name": "Project Name",
+      "status": "active",
+      "attributes": {
+          "client": "Client Name",
+          "deadline": "2024-12-31"
+      },
+      "user_ids": [1, 2, 3]
+  }
+  ```
+
+- Get a project
+  ```http
+  GET /api/projects/{id}
+  ```
+
+- Update a project
+  ```http
+  PUT /api/projects/{id}
+  Content-Type: application/json
+
+  {
+      "name": "Updated Project Name",
+      "status": "completed",
+      "attributes": {
+          "client": "Updated Client Name"
+      },
+      "user_ids": [1, 4, 5]
+  }
+  ```
+
+- Delete a project
+  ```http
+  DELETE /api/projects/{id}
+  ```
+
+#### Timesheets
+
+- List all timesheets
+  ```http
+  GET /api/timesheets?page=1&filters[project_id]=1&date_from=2024-01-01&date_to=2024-01-31
+  ```
+
+- Create a timesheet entry
+  ```http
+  POST /api/timesheets
+  Content-Type: application/json
+
+  {
+      "project_id": 1,
+      "task_name": "Development",
+      "date": "2024-01-15",
+      "hours": 8
+  }
+  ```
+
+- Get a timesheet entry
+  ```http
+  GET /api/timesheets/{id}
+  ```
+
+- Update a timesheet entry
+  ```http
+  PUT /api/timesheets/{id}
+  Content-Type: application/json
+
+  {
+      "project_id": 1,
+      "task_name": "Code Review",
+      "date": "2024-01-15",
+      "hours": 4
+  }
+  ```
+
+- Delete a timesheet entry
+  ```http
+  DELETE /api/timesheets/{id}
+  ```
+
+### Error Responses
+
+The API returns appropriate HTTP status codes:
+
+- 200: Success
+- 201: Created
+- 400: Bad Request
+- 401: Unauthorized
+- 403: Forbidden
+- 404: Not Found
+- 422: Validation Error
+- 500: Server Error
+
+Example error response:
 ```json
 {
-    "data": [
-        {
-            "id": 1,
-            "name": "Marketing Campaign Project",
-            "status": "active",
-            "attribute_values": [
-                {
-                    "name": "department",
-                    "value": "Marketing"
-                },
-                {
-                    "name": "budget",
-                    "value": 50000
-                }
-            ],
-            "users": [
-                {
-                    "id": 1,
-                    "first_name": "John",
-                    "last_name": "Doe"
-                }
-            ]
-        }
-    ],
-    "meta": {
-        "current_page": 1,
-        "total": 10,
-        "per_page": 15
+    "message": "The given data was invalid.",
+    "errors": {
+        "email": ["The email field is required."],
+        "password": ["The password field is required."]
     }
 }
 ```
 
-#### Create Project
-```http
-POST /api/projects
-Authorization: Bearer {token}
-Content-Type: application/json
+## Postman Collection
 
-{
-    "name": "New Project",
-    "status": "pending",
-    "attributes": {
-        "department": "IT",
-        "start_date": "2024-03-20",
-        "end_date": "2024-06-20",
-        "budget": 75000
-    },
-    "user_ids": [1, 2, 3]
-}
-```
+A Postman collection is available in the `postman` directory. To use it:
 
-### Timesheets
+1. Import the collection into Postman
+2. Create an environment with the following variables:
+   - `base_url`: Your API base URL (e.g., http://localhost:8000)
+   - `token`: Will be automatically set after successful login
 
-#### Create Timesheet Entry
-```http
-POST /api/timesheets
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-    "project_id": 1,
-    "task_name": "Feature Development",
-    "date": "2024-03-20",
-    "hours": 4.5
-}
-```
-
-#### Bulk Create Timesheet Entries
-```http
-POST /api/timesheets/bulk
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-    "timesheets": [
-        {
-            "project_id": 1,
-            "task_name": "Feature Development",
-            "date": "2024-03-20",
-            "hours": 4.5
-        },
-        {
-            "project_id": 2,
-            "task_name": "Code Review",
-            "date": "2024-03-20",
-            "hours": 2.0
-        }
-    ]
-}
-```
+The collection includes pre-request scripts that handle authentication automatically.
 
 ## Creating Database Dump
 
@@ -314,30 +422,6 @@ If you encounter issues:
      ```bash
      mysqldump --column-statistics=0 --set-gtid-purged=OFF [other options...]
      ```
-
-## Error Handling
-
-The API returns standard HTTP status codes:
-
-- 200: Success
-- 201: Created
-- 400: Bad Request
-- 401: Unauthorized
-- 403: Forbidden
-- 404: Not Found
-- 422: Validation Error
-- 500: Server Error
-
-Example Error Response:
-```json
-{
-    "message": "The given data was invalid.",
-    "errors": {
-        "name": ["The name field is required."],
-        "status": ["The selected status is invalid."]
-    }
-}
-```
 
 ## Testing
 

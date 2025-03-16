@@ -27,11 +27,11 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('Personal Access Token');
 
         return response()->json([
             'user' => $user,
-            'access_token' => $token,
+            'access_token' => $token->accessToken,
             'token_type' => 'Bearer',
         ], 201);
     }
@@ -50,18 +50,18 @@ class AuthController extends Controller
         }
 
         $user = User::where('email', $request->email)->firstOrFail();
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('Personal Access Token');
 
         return response()->json([
             'user' => $user,
-            'access_token' => $token,
+            'access_token' => $token->accessToken,
             'token_type' => 'Bearer',
         ]);
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $request->user()->token()->revoke();
 
         return response()->json([
             'message' => 'Successfully logged out'
