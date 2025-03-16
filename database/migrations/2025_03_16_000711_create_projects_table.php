@@ -16,6 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->enum('status', ['pending', 'active', 'completed'])->default('pending');
             $table->timestamps();
+
+            // Add index for better performance
+            $table->index('status');
         });
     }
 
