@@ -8,7 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class AttributeValue extends Model
 {
     use HasFactory;
-    protected $fillable = ['attribute_id', 'entity_id', 'value'];
+
+    protected $fillable = [
+        'attribute_id',
+        'project_id',
+        'value'
+    ];
+
+    protected $with = ['attribute'];
 
     public function attribute()
     {
@@ -17,6 +24,6 @@ class AttributeValue extends Model
 
     public function project()
     {
-        return $this->belongsTo(Project::class, 'entity_id');
+        return $this->belongsTo(Project::class);
     }
 }

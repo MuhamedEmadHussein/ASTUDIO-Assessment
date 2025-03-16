@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('attribute_values', function (Blueprint $table) {
             $table->id();
             $table->foreignId('attribute_id')->constrained()->onDelete('cascade');
-            $table->unsignedBigInteger('entity_id');
+            $table->foreignId('project_id')->constrained()->onDelete('cascade');
             $table->text('value');
             $table->timestamps();
-            //index for better performance
-            $table->index('entity_id');
+
+            // Add composite index for better performance
+            $table->index(['project_id', 'attribute_id']);
         });
     }
 

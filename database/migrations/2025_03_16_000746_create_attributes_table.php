@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Enums\AttributeType;
 
 return new class extends Migration
 {
@@ -13,9 +14,13 @@ return new class extends Migration
     {
         Schema::create('attributes', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->enum('type', ['text', 'date', 'number', 'select']);
+            $table->string('name')->unique();
+            $table->string('type');
+            $table->json('options')->nullable(); // For SELECT type attributes
             $table->timestamps();
+
+            // Add index for better performance
+            $table->index('type');
         });
     }
 
